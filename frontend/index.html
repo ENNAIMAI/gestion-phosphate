@@ -1,0 +1,28 @@
+
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Black and White UX/UI Design</title>
+      <meta name="description" content="Offers a sleek black and white UX/UI design template for professional websites, enhancing user experience and visual appeal for designers and businesses." />
+      <meta name="robots" content="noindex, nofollow" />
+      <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
+      
+    </head>
+
+    <body>
+      
+      <div id="root"></div>
+    <script>
+      window.addEventListener('error', function(event) {
+        document.body.innerHTML += '<div style="color:red; padding:20px; font-family:monospace; background:#fee; border:1px solid red; position:fixed; top:10%; left:10%; right:10%; z-index:9999;"><strong>Fatal Error:</strong> ' + event.message + '<br><br><code>' + event.error?.stack + '</code></div>';
+      });
+      window.addEventListener('unhandledrejection', function(event) {
+        document.body.innerHTML += '<div style="color:red; padding:20px; font-family:monospace; background:#fee; border:1px solid red; position:fixed; top:30%; left:10%; right:10%; z-index:9999;"><strong>Unhandled Promise Rejection:</strong> ' + event.reason + '</div>';
+      });
+    </script>
+    <script type="module" src="/src/main.tsx"></script>
+      
+    </body>
+  </html>

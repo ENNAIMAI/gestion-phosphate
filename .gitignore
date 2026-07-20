@@ -1,0 +1,39 @@
+# Node
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+
+# Laravel / PHP
+vendor/
+.env
+.env.backup
+.phpunit.result.cache
+storage/logs/
+storage/framework/cache/
+storage/framework/sessions/
+storage/framework/views/
+bootstrap/cache/
+.composer/
+
+# Python (AI Service)
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
