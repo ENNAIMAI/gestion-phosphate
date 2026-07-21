@@ -610,11 +610,12 @@ export function StocksView({ userRole }: { userRole: string }) {
     }
   };
 
-  const filtered = stocksList.filter(s =>
-    [s.location?.site?.name, s.location?.name, s.phosphate_type?.name].some(
+  const filtered = stocksList.filter(s => {
+    if (!search) return true;
+    return [s.location?.site?.name, s.location?.name, s.phosphate_type?.name, s.phosphateType?.name].some(
       v => v && v.toLowerCase().includes(search.toLowerCase())
-    )
-  );
+    );
+  });
 
   const filteredLocations = metadata?.locations?.filter((l: any) => l.site_id === Number(siteId)) || [];
   const isAuthorized = userRole === "Admin" || userRole === "Responsable Stock";

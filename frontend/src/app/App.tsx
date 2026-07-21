@@ -1348,11 +1348,12 @@ const StocksView = React.memo(function StocksView({ userRole, dashboardData }: {
     }
   };
 
-  const filtered = stocksList.filter(s =>
-    [s.location?.site?.name, s.location?.name, s.phosphate_type?.name].some(
+  const filtered = stocksList.filter(s => {
+    if (!search) return true;
+    return [s.location?.site?.name, s.location?.name, s.phosphate_type?.name, s.phosphateType?.name].some(
       v => v && v.toLowerCase().includes(search.toLowerCase())
-    )
-  );
+    );
+  });
 
   const filteredLocations = metadata?.locations?.filter((l: any) => String(l.site_id) === String(siteId)) || [];
   const isAuthorized = userRole === "Admin" || userRole === "Responsable Stock";
@@ -1748,6 +1749,7 @@ interface AlertViewProps {
 const AlertesView = React.memo(function AlertesView({ alerts, lang }: AlertViewProps) {
   const [priorityFilter, setPriorityFilter] = useState("ALL");
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const [isFeedCollapsed, setIsFeedCollapsed] = useState(false);
   const critCount = alerts.filter(a => a.type_alerte === "MAX_SEUIL" && a.statut === "NEW").length;
   const lowCount = alerts.filter(a => a.type_alerte === "MIN_SEUIL" && a.statut === "NEW").length;
   const resolvedCount = alerts.filter(a => a.statut === "RESOLVED").length;
@@ -1819,8 +1821,12 @@ const AlertesView = React.memo(function AlertesView({ alerts, lang }: AlertViewP
         
         {/* Header Block of Feed */}
         <div className="flex justify-between items-center border-b border-slate-100 pb-3">
-          <div className="flex items-center gap-2 text-slate-800">
-            <ListCollapse size={16} />
+          <div 
+            className="flex items-center gap-2 text-slate-800 cursor-pointer select-none hover:text-[#236534] transition-colors"
+            onClick={() => setIsFeedCollapsed(!isFeedCollapsed)}
+            title={lang === "fr" ? (isFeedCollapsed ? "Afficher le feed" : "Masquer le feed") : (isFeedCollapsed ? "Show feed" : "Hide feed")}
+          >
+            {isFeedCollapsed ? <ChevronRight size={16} /> : <ListCollapse size={16} />}
             <h3 className="font-bold text-sm">{lang === "fr" ? "Feed des alertes" : "Alerts Feed"}</h3>
           </div>
           
@@ -1838,7 +1844,8 @@ const AlertesView = React.memo(function AlertesView({ alerts, lang }: AlertViewP
         </div>
 
         {/* List of alert items */}
-        <div className="divide-y divide-slate-100">
+        {!isFeedCollapsed && (
+          <div className="divide-y divide-slate-100">
           {alerts.filter((a: any) => {
             if (priorityFilter === "ALL") return true;
             if (priorityFilter === "RESOLVED") return a.statut === "RESOLVED";
@@ -1877,6 +1884,7 @@ const AlertesView = React.memo(function AlertesView({ alerts, lang }: AlertViewP
             </div>
           )}
         </div>
+        )}
 
       </div>
     </div>
@@ -4643,6 +4651,16 @@ const SitesEmplacementsView = React.memo(function SitesEmplacementsView({ lang }
     }, 800);
   };
 
+  const handleDeleteSite = () => {
+    if (sitesList.length <= 1) return; // Prevent deleting the last site
+    if (window.confirm(lang === "fr" ? `Voulez-vous vraiment supprimer le site "${selectedSite}" ?` : `Are you sure you want to delete the site "${selectedSite}"?`)) {
+      const updatedSites = sitesList.filter(s => s.name !== selectedSite);
+      setSitesList(updatedSites);
+      setSelectedSite(updatedSites[0].name);
+    }
+  };
+
+
   const getSiteStats = (siteName: string) => {
     const siteStockObj = dashboardData?.stock_by_site?.find((s: any) => s.name && s.name.includes(siteName));
     const totalStock = siteStockObj ? parseFloat(siteStockObj.total) : 0;
@@ -4797,14 +4815,23 @@ const SitesEmplacementsView = React.memo(function SitesEmplacementsView({ lang }
 
         <div className="col-span-2 flex flex-col gap-6">
           <div className="bg-white border border-[#C8E6CC] p-6 shadow-sm flex flex-col gap-6" style={{ borderRadius: 20 }}>
-            <div>
-              <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-600">
-                {lang === "fr" ? "Complexe Sélectionné" : "Selected Complex"}
-              </span>
-              <h3 className="font-['Barlow_Condensed'] text-2xl font-bold text-[#233928]">{lang === "fr" ? `Site de ${selectedSite}` : `${selectedSite} Site`}</h3>
-              <span className="text-[10px] font-mono text-slate-400 block mt-0.5">
-                {sitesList.find(s => s.name === selectedSite)?.region}
-              </span>
+            <div className="flex justify-between items-start">
+              <div>
+                <span className="text-[10px] font-mono tracking-widest uppercase text-emerald-600">
+                  {lang === "fr" ? "Complexe Sélectionné" : "Selected Complex"}
+                </span>
+                <h3 className="font-['Barlow_Condensed'] text-2xl font-bold text-[#233928]">{lang === "fr" ? `Site de ${selectedSite}` : `${selectedSite} Site`}</h3>
+                <span className="text-[10px] font-mono text-slate-400 block mt-0.5">
+                  {sitesList.find(s => s.name === selectedSite)?.region}
+                </span>
+              </div>
+              <button 
+                onClick={handleDeleteSite}
+                title={lang === "fr" ? "Supprimer ce site" : "Delete this site"}
+                className="p-2 text-red-500 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-red-100 shadow-sm"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
