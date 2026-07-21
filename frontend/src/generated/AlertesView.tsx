@@ -132,7 +132,7 @@ export function AlertesView({ alerts, lang }: AlertViewProps) {
               </div>
               <div>
                 <h4 className="font-bold text-[13px] text-slate-800">{lang === "fr" ? "Aucune alerte active" : "No Active Alerts"}</h4>
-                <p className="text-[13px] text-slate-500 mt-1">{lang === "fr" ? "Vous n'avez aucune alerte active dans la base de données." : "You have no active alerts in the database."}</p>
+                <p className="text-[13px] text-slate-500 mt-1">{lang === "fr" ? "Vous n'avez aucune alerte active pour le moment." : "You have no active alerts at the moment."}</p>
               </div>
             </div>
           )}

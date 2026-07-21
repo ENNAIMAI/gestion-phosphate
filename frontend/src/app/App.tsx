@@ -44,7 +44,7 @@ const TRANSLATIONS = {
     utilisateurs: "Utilisateurs",
     welcomeUser: "Bienvenue,",
     lastSyncLabel: "Dernière synchronisation locale",
-    dbConnectedLabel: "Base de données connectée",
+    dbConnectedLabel: "Système en ligne",
     activeSessionLabel: "Session active",
     onlineLabel: "En ligne",
     createdLabel: "Créé le",
@@ -101,7 +101,7 @@ const TRANSLATIONS = {
     utilisateurs: "Users",
     welcomeUser: "Welcome,",
     lastSyncLabel: "Last local sync",
-    dbConnectedLabel: "Database connected",
+    dbConnectedLabel: "System online",
     activeSessionLabel: "Active session",
     onlineLabel: "Online",
     createdLabel: "Created on",
@@ -1872,7 +1872,7 @@ const AlertesView = React.memo(function AlertesView({ alerts, lang }: AlertViewP
               </div>
               <div>
                 <h4 className="font-bold text-[13px] text-slate-800">{lang === "fr" ? "Aucune alerte active" : "No Active Alerts"}</h4>
-                <p className="text-[13px] text-slate-500 mt-1">{lang === "fr" ? "Vous n'avez aucune alerte active dans la base de données." : "You have no active alerts in the database."}</p>
+                <p className="text-[13px] text-slate-500 mt-1">{lang === "fr" ? "Vous n'avez aucune alerte active pour le moment." : "You have no active alerts at the moment."}</p>
               </div>
             </div>
           )}
