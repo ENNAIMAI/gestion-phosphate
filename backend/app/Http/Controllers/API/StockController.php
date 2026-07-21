@@ -117,6 +117,39 @@ class StockController extends Controller
         }
     }
 
+    public function destroyMovement($id): JsonResponse
+    {
+        $user = auth()->user();
+        if (!$user || !in_array($user->role, ['Admin', 'Responsable Stock'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Accès non autorisé. Seul un Admin ou Responsable Stock peut supprimer un mouvement.',
+                'errors' => null,
+                'meta' => null
+            ], 403);
+        }
+
+        try {
+            $movement = \App\Models\StockMovement::findOrFail($id);
+            $movement->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mouvement de stock supprimé avec succès.',
+                'data' => null,
+                'meta' => null
+            ], 200);
+            
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Impossible de supprimer le mouvement : ' . $e->getMessage(),
+                'errors' => null,
+                'meta' => null
+            ], 422);
+        }
+    }
+
     /**
      * Exporte les mouvements de stocks en CSV (compatible Excel).
      */

@@ -1660,6 +1660,19 @@ const MouvementsView = React.memo(function MouvementsView({ dashboardData, userR
     }
   };
 
+  const handleDeleteMovement = async (id: number) => {
+    if (!window.confirm("Voulez-vous vraiment supprimer ce mouvement ?")) return;
+    try {
+      const res = await api.delete(`/movements/${id}`);
+      if (res.data.success || res.data.status === 'success') {
+        fetchMovements();
+      }
+    } catch (err) {
+      console.error("Failed to delete movement", err);
+      alert("Erreur lors de la suppression du mouvement.");
+    }
+  };
+
   useEffect(() => {
     fetchMovements();
   }, []);
@@ -1725,6 +1738,15 @@ const MouvementsView = React.memo(function MouvementsView({ dashboardData, userR
                           title="Valider ce mouvement"
                         >
                           VALIDER
+                        </button>
+                      )}
+                      {(userRole === 'Admin' || userRole === 'Responsable Stock') && (
+                        <button 
+                          onClick={() => handleDeleteMovement(m.id)}
+                          className="bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 px-2 py-1 rounded text-[10px] font-bold font-mono transition-colors"
+                          title="Supprimer ce mouvement"
+                        >
+                          SUPPRIMER
                         </button>
                       )}
                     </div>

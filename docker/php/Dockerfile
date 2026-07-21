@@ -12,13 +12,14 @@ RUN apt-get update && apt-get install -y \
     libzip-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libicu-dev \
     supervisor \
     cron \
     && rm -rf /var/lib/apt/lists/*
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip opcache intl
 
 # Install Redis extension via PECL
 RUN pecl install redis && docker-php-ext-enable redis
@@ -34,6 +35,10 @@ COPY docker/php/php.ini /usr/local/etc/php/conf.d/custom.ini
 COPY docker/php/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Application files are bind-mounted at runtime via docker-compose
+
+# Copy entrypoint script
+COPY docker/php/docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Tune PHP-FPM to allow more concurrent requests
 RUN echo "[www]\npm.max_children = 50\npm.start_servers = 10\npm.min_spare_servers = 5\npm.max_spare_servers = 20" > /usr/local/etc/php-fpm.d/zz-tune.conf

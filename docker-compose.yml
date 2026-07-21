@@ -4,18 +4,18 @@ services:
   # 1. Database Service (MySQL 8)
   db:
     image: mysql:8.0
-    container_name: phosphate-db
+    container_name: db
     restart: always
     command: --skip-name-resolve
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-phosphate_stock}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
     ports:
-      - "127.0.0.1:3307:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DB_PASSWORD:-root}"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-u", "root", "-p${DB_PASSWORD:-root}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,11 +25,11 @@ services:
   # 2. Cache & Queue Broker (Redis 7)
   redis:
     image: redis:7-alpine
-    container_name: phosphate-redis
+    container_name: redis
     restart: always
     command: redis-server --appendonly yes
     ports:
-      - "127.0.0.1:6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -43,25 +43,25 @@ services:
   # 3. Mailbox Server (Mailpit)
   mailpit:
     image: axllent/mailpit:latest
-    container_name: phosphate-mailpit
+    container_name: mailpit
     restart: always
     ports:
-      - "127.0.0.1:8025:8025" # HTTP GUI
-      - "127.0.0.1:1025:1025" # SMTP
+      - "${MAILPIT_HTTP_PORT:-8025}:8025" # HTTP GUI
+      - "${MAILPIT_SMTP_PORT:-1025}:1025" # SMTP
     networks:
       - phosphate-network
 
   # 4. Database Admin Tool (phpMyAdmin)
   phpmyadmin:
     image: phpmyadmin:latest
-    container_name: phosphate-phpmyadmin
+    container_name: phpmyadmin
     restart: always
     environment:
       PMA_HOST: db
-      PMA_USER: root
+      PMA_USER: ${DB_USERNAME:-root}
       PMA_PASSWORD: ${DB_PASSWORD:-root}
     ports:
-      - "127.0.0.1:8080:80"
+      - "${PMA_PORT:-8080}:80"
     depends_on:
       db:
         condition: service_healthy
@@ -77,14 +77,14 @@ services:
     restart: always
     command: >
       sh -c "
-      if [ ! -d vendor ]; then composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress; fi &&
-      if [ ! -f .env ]; then cp .env.example .env && php artisan key:generate; fi &&
-      php artisan migrate --force --seed;
+      if [ ! -d vendor ]; then composer install --no-interaction --prefer-dist; fi;
+      if [ ! -f .env ]; then cp .env.example .env && php artisan key:generate; fi;
+      php artisan migrate --force --seed || true;
       php-fpm
       "
     volumes:
       - ./backend:/var/www
-      - /var/www/vendor
+      - backend_vendor:/var/www/vendor
     depends_on:
       db:
         condition: service_healthy
@@ -96,10 +96,10 @@ services:
   # 6. Nginx Web Server for Laravel
   nginx:
     image: nginx:alpine
-    container_name: phosphate-nginx
+    container_name: nginx
     restart: always
     ports:
-      - "8085:80"
+      - "${NGINX_PORT:-8085}:80"
     volumes:
       - ./backend:/var/www
       - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
@@ -114,12 +114,12 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    container_name: phosphate-queue-worker
+    container_name: queue-worker
     restart: always
     command: /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
     volumes:
       - ./backend:/var/www
-      - /var/www/vendor
+      - backend_vendor:/var/www/vendor
     depends_on:
       db:
         condition: service_healthy
@@ -133,12 +133,12 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    container_name: phosphate-scheduler
+    container_name: scheduler
     restart: always
     command: sh -c "while true; do php /var/www/artisan schedule:run --verbose --no-interaction & sleep 60; done"
     volumes:
       - ./backend:/var/www
-      - /var/www/vendor
+      - backend_vendor:/var/www/vendor
     depends_on:
       db:
         condition: service_healthy
@@ -152,29 +152,29 @@ services:
     build:
       context: ./ai-service
       dockerfile: Dockerfile
-    container_name: phosphate-ai-service
+    container_name: ai-service
     restart: always
     volumes:
       - ./ai-service:/app
     ports:
-      - "8001:8000"
+      - "${AI_PORT:-8001}:8000"
     networks:
       - phosphate-network
 
   # 10. React Frontend (Vite)
   frontend:
     image: node:20-alpine
-    container_name: phosphate-frontend
+    container_name: frontend
     restart: always
     working_dir: /app
     volumes:
       - ./frontend:/app
       - /app/node_modules
     ports:
-      - "3001:5173"
+      - "${FRONTEND_PORT:-3001}:5173"
     environment:
       - CHOKIDAR_USEPOLLING=true
-      - NODE_ENV=production
+      - NODE_ENV=development
     command: sh -c "npm install --include=dev --no-audit --no-fund && npm run dev -- --host 0.0.0.0 --port 5173"
     depends_on:
       - app
@@ -192,6 +192,3 @@ volumes:
 networks:
   phosphate-network:
     driver: bridge
-    ipam:
-      config:
-        - subnet: 172.28.0.0/16
