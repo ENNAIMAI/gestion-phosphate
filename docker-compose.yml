@@ -79,7 +79,7 @@ services:
       sh -c "
       if [ ! -d vendor ]; then composer install --no-interaction --prefer-dist --optimize-autoloader --no-progress; fi &&
       if [ ! -f .env ]; then cp .env.example .env && php artisan key:generate; fi &&
-      php artisan migrate --force;
+      php artisan migrate --force --seed;
       php-fpm
       "
     volumes:
