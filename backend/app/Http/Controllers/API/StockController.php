@@ -82,6 +82,41 @@ class StockController extends Controller
         }
     }
 
+    public function validateMovement($id): JsonResponse
+    {
+        // Enforce policy authorization (Admin or Responsable Stock)
+        $user = auth()->user();
+        if (!$user || !in_array($user->role, ['Admin', 'Responsable Stock'])) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Accès non autorisé. Seul un Admin ou Responsable Stock peut valider un mouvement.',
+                'errors' => null,
+                'meta' => null
+            ], 403);
+        }
+
+        try {
+            $movement = \App\Models\StockMovement::findOrFail($id);
+            $movement->status = 'valide';
+            $movement->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Mouvement de stock validé avec succès.',
+                'data' => $movement,
+                'meta' => null
+            ], 200);
+            
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Impossible de valider le mouvement : ' . $e->getMessage(),
+                'errors' => null,
+                'meta' => null
+            ], 422);
+        }
+    }
+
     /**
      * Exporte les mouvements de stocks en CSV (compatible Excel).
      */

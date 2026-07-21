@@ -21,25 +21,24 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Users
         $admin = User::create([
             'name' => 'Directeur Admin',
             'email' => 'admin@phosphate.com',
-            'password' => Hash::make('123456'),
+            'password' => '123456',
             'role' => 'Admin',
         ]);
 
         $responsable = User::create([
             'name' => 'Responsable de Stock',
             'email' => 'responsable@phosphate.com',
-            'password' => Hash::make('123456'),
+            'password' => '123456',
             'role' => 'Responsable Stock',
         ]);
 
         $operateur = User::create([
             'name' => 'Opérateur Terrain',
             'email' => 'operateur@phosphate.com',
-            'password' => Hash::make('123456'),
+            'password' => '123456',
             'role' => 'Operateur',
         ]);
 

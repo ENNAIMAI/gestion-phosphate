@@ -53,35 +53,6 @@ export function MouvementsView() {
   return (
     <div className="flex flex-col gap-6 animate-fadeIn">
       <div className="bg-white border border-border p-6 shadow-sm flex flex-col gap-4" style={{ borderRadius: 20 }}>
-        
-        {/* Intégration des outils Opérateur */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="col-span-1">
-            <QRScannerMock />
-          </div>
-          <div className="col-span-1 border border-border p-6 shadow-sm flex flex-col gap-4 bg-white" style={{ borderRadius: 20 }}>
-            <div>
-              <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400 block mb-1">Opérations</span>
-              <h3 className="font-['Barlow_Condensed'] text-sm tracking-wider uppercase font-bold text-[#233928]">Saisie de Flux Rapide</h3>
-            </div>
-            <QuickMovementForm metadata={{}} onSuccess={fetchMovements} />
-          </div>
-        </div>
-
-        
-        {/* Intégration des outils Opérateur */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="col-span-1">
-            <QRScannerMock />
-          </div>
-          <div className="col-span-1 border border-border p-6 shadow-sm flex flex-col gap-4 bg-white" style={{ borderRadius: 20 }}>
-            <div>
-              <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400 block mb-1">Opérations</span>
-              <h3 className="font-['Barlow_Condensed'] text-sm tracking-wider uppercase font-bold text-[#233928]">Saisie de Flux Rapide</h3>
-            </div>
-            <QuickMovementForm metadata={{}} onSuccess={fetchMovements} />
-          </div>
-        </div>
 
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400">Traçabilité</span>

@@ -114,6 +114,7 @@ class StockService
                 'user_id' => Auth::id() ?? 1, // fallback to ID 1 if run via CLI
                 'description' => $description,
                 'moyen_transport' => $moyenTransport,
+                'status' => 'en_cours',
             ]);
         });
     }

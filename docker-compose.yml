@@ -11,7 +11,7 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE:-phosphate_stock}
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
     ports:
-      - "3307:3306"
+      - "127.0.0.1:3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -29,7 +29,7 @@ services:
     restart: always
     command: redis-server --appendonly yes
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -46,8 +46,8 @@ services:
     container_name: phosphate-mailpit
     restart: always
     ports:
-      - "8025:8025" # HTTP GUI
-      - "1025:1025" # SMTP
+      - "127.0.0.1:8025:8025" # HTTP GUI
+      - "127.0.0.1:1025:1025" # SMTP
     networks:
       - phosphate-network
 
@@ -61,7 +61,7 @@ services:
       PMA_USER: root
       PMA_PASSWORD: ${DB_PASSWORD:-root}
     ports:
-      - "8080:80"
+      - "127.0.0.1:8080:80"
     depends_on:
       db:
         condition: service_healthy
@@ -175,7 +175,7 @@ services:
     environment:
       - CHOKIDAR_USEPOLLING=true
       - NODE_ENV=production
-    command: sh -c "npm install --include=dev --no-audit --no-fund && npm run build && npm run preview -- --host 0.0.0.0 --port 5173 --strictPort"
+    command: sh -c "npm install --include=dev --no-audit --no-fund && npm run dev -- --host 0.0.0.0 --port 5173"
     depends_on:
       - app
     networks:

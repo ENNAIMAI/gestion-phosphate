@@ -39,6 +39,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/stocks/{id}', [StockController::class, 'update']);
     Route::delete('/stocks/{id}', [StockController::class, 'destroy']);
     Route::post('/movements', [StockController::class, 'storeMovement']);
+    Route::post('/movements/{id}/validate', [StockController::class, 'validateMovement']);
     Route::get('/movements', [DashboardController::class, 'movements']);
     Route::get('/audit-logs', [DashboardController::class, 'auditLogs']);
     Route::get('/reports/excel', [StockController::class, 'exportExcel']);

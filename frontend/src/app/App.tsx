@@ -1629,7 +1629,7 @@ const StocksView = React.memo(function StocksView({ userRole, dashboardData }: {
 
 // ─── Mouvements View ──────────────────────────────────────────────────────────
 
-const MouvementsView = React.memo(function MouvementsView({ dashboardData }: { dashboardData: any }) {
+const MouvementsView = React.memo(function MouvementsView({ dashboardData, userRole }: { dashboardData: any, userRole?: string }) {
   const [movements, setMovements] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -1644,6 +1644,18 @@ const MouvementsView = React.memo(function MouvementsView({ dashboardData }: { d
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleValidate = async (id: number) => {
+    try {
+      const res = await api.post(`/movements/${id}/validate`);
+      if (res.data.success || res.data.status === 'success') {
+        fetchMovements();
+      }
+    } catch (err) {
+      console.error("Failed to validate movement", err);
+      alert("Erreur lors de la validation du mouvement.");
     }
   };
 
@@ -1667,35 +1679,6 @@ const MouvementsView = React.memo(function MouvementsView({ dashboardData }: { d
   return (
     <div className="flex flex-col gap-6 animate-fadeIn">
       <div className="bg-white border border-border p-6 shadow-sm flex flex-col gap-4" style={{ borderRadius: 20 }}>
-        
-        {/* Intégration des outils Opérateur */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="col-span-1">
-            <QRScannerMock />
-          </div>
-          <div className="col-span-1 border border-border p-6 shadow-sm flex flex-col gap-4 bg-white" style={{ borderRadius: 20 }}>
-            <div>
-              <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400 block mb-1">Opérations</span>
-              <h3 className="font-['Barlow_Condensed'] text-sm tracking-wider uppercase font-bold text-[#233928]">Saisie de Flux Rapide</h3>
-            </div>
-            <QuickMovementForm metadata={{}} onSuccess={fetchMovements} />
-          </div>
-        </div>
-
-        
-        {/* Intégration des outils Opérateur */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="col-span-1">
-            <QRScannerMock />
-          </div>
-          <div className="col-span-1 border border-border p-6 shadow-sm flex flex-col gap-4 bg-white" style={{ borderRadius: 20 }}>
-            <div>
-              <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400 block mb-1">Opérations</span>
-              <h3 className="font-['Barlow_Condensed'] text-sm tracking-wider uppercase font-bold text-[#233928]">Saisie de Flux Rapide</h3>
-            </div>
-            <QuickMovementForm metadata={{}} onSuccess={fetchMovements} />
-          </div>
-        </div>
 
         <div className="flex items-center justify-between">
           <span className="text-[10px] font-mono tracking-widest uppercase text-slate-400">Traçabilité</span>
@@ -1731,7 +1714,20 @@ const MouvementsView = React.memo(function MouvementsView({ dashboardData }: { d
                   </td>
                   <td className="px-4 py-3.5 text-xs text-slate-500">{m.user?.name}</td>
                   <td className="px-4 py-3.5 text-[10px] font-mono text-slate-400">{new Date(m.date_mouvement).toLocaleString("fr-FR")}</td>
-                  <td className="px-4 py-3.5"><Badge statut={m.movement_type?.direction === "IN" ? "validé" : "en_cours"} /></td>
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center gap-2">
+                      <Badge statut={m.status === 'valide' ? 'validé' : 'en_cours'} />
+                      {m.status === 'en_cours' && (userRole === 'Admin' || userRole === 'Responsable Stock') && (
+                        <button 
+                          onClick={() => handleValidate(m.id)}
+                          className="bg-emerald-50 text-[#236534] hover:bg-emerald-100 hover:text-emerald-700 px-2 py-1 rounded text-[10px] font-bold font-mono transition-colors"
+                          title="Valider ce mouvement"
+                        >
+                          VALIDER
+                        </button>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -6157,7 +6153,7 @@ export default function App() {
       case "dashboard":   return <DashboardView data={dashboardData} user={user} userRole={role} onRefresh={fetchDashboard} onNavigate={setActiveView} onQuickAction={handleQuickAction} lang={lang} isDarkMode={isDarkMode} />;
       case "stocks":      return <StocksView userRole={role} dashboardData={dashboardData} />;
       case "plan_stocks": return <PlanStocksView />;
-      case "mouvements":  return <MouvementsView dashboardData={dashboardData} />;
+      case "mouvements":  return <MouvementsView dashboardData={dashboardData} userRole={role} />;
       case "silos":       return <SilosView />;
       case "sites":       return <SitesEmplacementsView lang={lang} />;
       case "produits":    return <ProduitsView currentUserRole={role} />;
