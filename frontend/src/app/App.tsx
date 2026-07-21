@@ -402,7 +402,7 @@ function LoginView({ onLoginSuccess, isDarkMode, setIsDarkMode, lang, setLang }:
         </h2>
 
         {error && (
-          <div className="mb-5 p-3.5 bg-red-500/10 border-l-4 border-red-500 rounded-xl text-xs font-mono text-red-200">
+          <div className={`mb-5 p-3.5 bg-red-500/10 border-l-4 border-red-500 rounded-xl text-xs font-mono ${isDarkMode ? 'text-red-200' : 'text-red-600'}`}>
             {error}
           </div>
         )}
