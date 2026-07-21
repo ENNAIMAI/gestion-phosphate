@@ -1746,6 +1746,8 @@ interface AlertViewProps {
 }
 
 const AlertesView = React.memo(function AlertesView({ alerts, lang }: AlertViewProps) {
+  const [priorityFilter, setPriorityFilter] = useState("ALL");
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const critCount = alerts.filter(a => a.type_alerte === "MAX_SEUIL" && a.statut === "NEW").length;
   const lowCount = alerts.filter(a => a.type_alerte === "MIN_SEUIL" && a.statut === "NEW").length;
   const resolvedCount = alerts.filter(a => a.statut === "RESOLVED").length;
@@ -1823,17 +1825,57 @@ const AlertesView = React.memo(function AlertesView({ alerts, lang }: AlertViewP
           </div>
           
           {/* Dropdown Priority Filter */}
-          <div className="flex items-center gap-1.5 text-[11px] border border-slate-200 px-3 py-1.5 rounded text-slate-600 cursor-pointer hover:bg-slate-50 transition-colors">
-            <Filter size={12} />
-            <span className="font-medium">{lang === "fr" ? "Toutes les priorités" : "All Priorities"}</span>
-            <ChevronDown size={12} />
+          <div className="relative">
+            <div 
+              className="flex items-center gap-1.5 text-[11px] border border-slate-200 px-3 py-1.5 rounded text-slate-600 cursor-pointer hover:bg-slate-50 transition-colors"
+              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
+            >
+              <Filter size={12} />
+              <span className="font-medium">
+                {priorityFilter === "ALL" ? (lang === "fr" ? "Toutes les priorités" : "All Priorities") :
+                 priorityFilter === "MAX_SEUIL" ? (lang === "fr" ? "Critiques" : "Criticals") :
+                 priorityFilter === "MIN_SEUIL" ? (lang === "fr" ? "Avertissements" : "Warnings") : 
+                 (lang === "fr" ? "Résolues" : "Resolved")}
+              </span>
+              <ChevronDown size={12} />
+            </div>
+
+            {showFilterDropdown && (
+              <div className="absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded shadow-lg z-10 py-1">
+                {[
+                  { value: "ALL", label: lang === "fr" ? "Toutes les priorités" : "All Priorities" },
+                  { value: "MAX_SEUIL", label: lang === "fr" ? "Critiques" : "Criticals" },
+                  { value: "MIN_SEUIL", label: lang === "fr" ? "Avertissements" : "Warnings" },
+                  { value: "RESOLVED", label: lang === "fr" ? "Résolues" : "Resolved" }
+                ].map(opt => (
+                  <div 
+                    key={opt.value}
+                    className={`px-3 py-2 text-xs cursor-pointer hover:bg-slate-50 ${priorityFilter === opt.value ? 'bg-slate-50 text-emerald-700 font-bold' : 'text-slate-600'}`}
+                    onClick={() => {
+                      setPriorityFilter(opt.value);
+                      setShowFilterDropdown(false);
+                    }}
+                  >
+                    {opt.label}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* List of alert items */}
         <div className="divide-y divide-slate-100">
-          {alerts.length > 0 ? (
-            alerts.map((a: any) => (
+          {alerts.filter((a: any) => {
+            if (priorityFilter === "ALL") return true;
+            if (priorityFilter === "RESOLVED") return a.statut === "RESOLVED";
+            return a.type_alerte === priorityFilter && a.statut !== "RESOLVED";
+          }).length > 0 ? (
+            alerts.filter((a: any) => {
+              if (priorityFilter === "ALL") return true;
+              if (priorityFilter === "RESOLVED") return a.statut === "RESOLVED";
+              return a.type_alerte === priorityFilter && a.statut !== "RESOLVED";
+            }).map((a: any) => (
               <div key={a.id} className={`py-4 flex items-start gap-4 transition-colors hover:bg-slate-50 ${a.statut === "RESOLVED" ? "opacity-50" : ""}`}>
                 <AlertTriangle size={15} className={`mt-0.5 shrink-0 ${a.type_alerte === "MAX_SEUIL" ? "text-red-500" : "text-amber-500"}`} />
                 <div className="flex-1 min-w-0">
@@ -6072,6 +6114,10 @@ export default function App() {
     { id: 2, title: "Mouvement Validé", msg: "Sortie de 145 t de phosphate de Safi validée.", time: "09:45" },
     { id: 3, title: "Modèle Prophet", msg: "Calcul IA terminé avec précision de 94.8%.", time: "Hier" }
   ]);
+
+  useEffect(() => {
+    setShowNotifs(false);
+  }, [activeView]);
 
   const getSearchSuggestions = () => {
     if (!globalSearch) return [];
