@@ -61,7 +61,7 @@ L'application sera ensuite prête ! Aucune configuration manuelle ou installatio
 
 Pour vous connecter au **Tableau de bord** (accessible sur [http://localhost:3001](http://localhost:3001)), utilisez l'un des comptes pré-configurés ci-dessous. 
 
-**Mot de passe commun pour tous les comptes :** `password`
+**Mot de passe commun pour tous les comptes :** `123456`
 
 | Rôle | Adresse E-mail | Fonctionnalités clés |
 | :--- | :--- | :--- |
