@@ -16,7 +16,9 @@ return [
     |
     */
 
-    'enabled' => env('TELESCOPE_ENABLED', true),
+    // Telescope is a development diagnostic tool. Its watchers add work to
+    // every request, so keep it opt-in for production deployments.
+    'enabled' => env('TELESCOPE_ENABLED', false),
 
     /*
     |--------------------------------------------------------------------------

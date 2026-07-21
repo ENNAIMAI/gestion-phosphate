@@ -90,10 +90,10 @@ class StockController extends Controller
         $query = \App\Models\StockMovement::with(['stock.location.site', 'stock.phosphateType', 'movementType', 'user']);
 
         if ($request->filled('start_date')) {
-            $query->whereDate('date_mouvement', '>=', $request->start_date);
+            $query->where('date_mouvement', '>=', $request->start_date);
         }
         if ($request->filled('end_date')) {
-            $query->whereDate('date_mouvement', '<=', $request->end_date);
+            $query->where('date_mouvement', '<', \Carbon\Carbon::parse($request->end_date)->addDay()->startOfDay());
         }
         if ($request->filled('phosphate_type_id')) {
             $query->whereHas('stock', function($q) use ($request) {
@@ -228,10 +228,10 @@ class StockController extends Controller
         // Fetch movements and stocks for real data injection
         $query = \App\Models\StockMovement::with(['stock.location.site', 'stock.phosphateType', 'movementType']);
         if ($request->filled('start_date')) {
-            $query->whereDate('date_mouvement', '>=', $request->start_date);
+            $query->where('date_mouvement', '>=', $request->start_date);
         }
         if ($request->filled('end_date')) {
-            $query->whereDate('date_mouvement', '<=', $request->end_date);
+            $query->where('date_mouvement', '<', \Carbon\Carbon::parse($request->end_date)->addDay()->startOfDay());
         }
         $movements = $query->get();
         $totalTonnage = $movements->sum('quantite');
@@ -565,10 +565,10 @@ class StockController extends Controller
         $query = \App\Models\StockMovement::with(['stock.location.site', 'stock.phosphateType', 'movementType', 'user']);
 
         if ($request->filled('start_date')) {
-            $query->whereDate('date_mouvement', '>=', $request->start_date);
+            $query->where('date_mouvement', '>=', $request->start_date);
         }
         if ($request->filled('end_date')) {
-            $query->whereDate('date_mouvement', '<=', $request->end_date);
+            $query->where('date_mouvement', '<', \Carbon\Carbon::parse($request->end_date)->addDay()->startOfDay());
         }
         if ($request->filled('phosphate_type_id')) {
             $query->whereHas('stock', function($q) use ($request) {

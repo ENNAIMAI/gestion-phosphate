@@ -123,7 +123,7 @@ export function IAView() {
       console.error(err);
       setErrorDetails(
         err.response?.data?.message || 
-        "Le microservice d'IA Prophet est inaccessible ou les données d'historiques générées sont insuffisantes."
+        "Le service de prédiction est inaccessible ou les données historiques sont insuffisantes."
       );
     } finally {
       clearInterval(stepsInterval);
@@ -236,9 +236,9 @@ export function IAView() {
       {/* KPI Model Stats */}
       <div className="border border-border grid grid-cols-4 divide-x divide-border bg-white shadow-sm" style={{ borderRadius: 20, overflow: 'hidden' }}>
         {[
-          { label: "Modèle Prédictif", value: "Prophet AI", sub: "Python microservice" },
+          { label: "Modèle Prédictif", value: "Prophet AI", sub: "Algorithme d'analyse" },
           { label: "Confiance", value: `${(confidenceInterval * 100).toFixed(0)} %`, sub: "Intervalle de marge configuré" },
-          { label: "État Service", value: "Opérationnel", sub: "FastAPI / Docker network" },
+          { label: "État Service", value: "Opérationnel", sub: "Service IA connecté" },
           { label: "Dernier Calcul", value: lastForecastDate || "Non exécuté", sub: "Mise à jour en direct" },
         ].map(c => (
           <div key={c.label} className="p-5">
@@ -377,7 +377,7 @@ export function IAView() {
               {currentStep >= 0 ? "✓" : "○"} Chargement des silos et de l'historique...
             </span>
             <span className={`text-[10px] font-mono ${currentStep >= 1 ? "text-slate-700 font-bold" : "text-slate-400"}`}>
-              {currentStep >= 1 ? "✓" : "○"} Transmission au microservice Python...
+              {currentStep >= 1 ? "✓" : "○"} Traitement par l'algorithme d'IA...
             </span>
             <span className={`text-[10px] font-mono ${currentStep >= 2 ? "text-slate-700 font-bold" : "text-slate-400"}`}>
               {currentStep >= 2 ? "✓" : "○"} Apprentissage Prophet & Saisonnalités...
@@ -393,7 +393,7 @@ export function IAView() {
       {errorDetails && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-lg text-xs font-mono flex flex-col gap-2">
           <div><strong>Échec du calcul :</strong> {errorDetails}</div>
-          <div className="text-[10px] text-red-650">Suggestions : vérifiez que le container `ai-service` tourne bien ou lancez `docker compose restart`.</div>
+          <div className="text-[10px] text-red-650">Suggestions : le service de prévision est temporairement indisponible. Veuillez réessayer plus tard.</div>
         </div>
       )}
 

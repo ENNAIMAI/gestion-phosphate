@@ -1019,7 +1019,7 @@ export function ParametresView({ currentUserRole, initialTab }: { currentUserRol
               <span className="text-[9px] font-mono uppercase text-[#236534] font-bold">Algorithme Principal</span>
               <div className="font-['Barlow_Condensed'] text-xl font-bold text-[#233928]">{aiConfig?.default_model}</div>
               <p className="text-[10px] text-slate-500 leading-relaxed font-mono">
-                Microservice Python autonome s'appuyant sur Prophet (Meta AI). Calcule de manière adaptative les tendances et anomalies sur les flux de mouvements.
+                Algorithme d'intelligence artificielle s'appuyant sur Prophet (Meta AI). Calcule de manière adaptative les tendances et anomalies sur les flux de mouvements.
               </p>
             </div>
 

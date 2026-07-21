@@ -22,32 +22,34 @@ class DashboardController extends Controller
      */
     public function index()
     {
+        $movementTotalForDate = static function (string $direction, \Carbon\Carbon $date): float {
+            $start = $date->copy()->startOfDay();
+            $end = $start->copy()->addDay();
+
+            return (float) StockMovement::whereHas('movementType', function ($query) use ($direction) {
+                $query->where('direction', $direction);
+            })
+                ->where('date_mouvement', '>=', $start)
+                ->where('date_mouvement', '<', $end)
+                ->sum('quantite');
+        };
+
         $totalStock = Stock::sum('quantite');
         $sitesCount = Site::count();
         $locationsCount = Location::count();
         $activeAlertsCount = Alert::where('statut', 'NEW')->count();
 
         // Calculate movements sums for today
-        $entriesToday = StockMovement::whereHas('movementType', function($q) {
-            $q->where('direction', 'IN');
-        })->whereDate('date_mouvement', today())->sum('quantite');
-
-        $exitsToday = StockMovement::whereHas('movementType', function($q) {
-            $q->where('direction', 'OUT');
-        })->whereDate('date_mouvement', today())->sum('quantite');
+        $entriesToday = $movementTotalForDate('IN', today());
+        $exitsToday = $movementTotalForDate('OUT', today());
 
         // Fallback to the latest movement date if today has 0 entries/exits
         if ($entriesToday == 0 && $exitsToday == 0) {
             $lastMovement = StockMovement::latest('date_mouvement')->first();
             if ($lastMovement) {
                 $lastDate = \Carbon\Carbon::parse($lastMovement->date_mouvement)->startOfDay();
-                $entriesToday = StockMovement::whereHas('movementType', function($q) {
-                    $q->where('direction', 'IN');
-                })->whereDate('date_mouvement', $lastDate)->sum('quantite');
-
-                $exitsToday = StockMovement::whereHas('movementType', function($q) {
-                    $q->where('direction', 'OUT');
-                })->whereDate('date_mouvement', $lastDate)->sum('quantite');
+                $entriesToday = $movementTotalForDate('IN', $lastDate);
+                $exitsToday = $movementTotalForDate('OUT', $lastDate);
             }
         }
 
@@ -300,7 +302,9 @@ class DashboardController extends Controller
         $query = \App\Models\AuditLog::with('user')->orderBy('created_at', 'desc');
 
         if ($period === 'day') {
-            $query->whereDate('created_at', today());
+            $start = today()->startOfDay();
+            $query->where('created_at', '>=', $start)
+                ->where('created_at', '<', $start->copy()->addDay());
         } elseif ($period === 'week') {
             $query->where('created_at', '>=', now()->subDays(7));
         } elseif ($period === 'month') {

@@ -1,2 +1,1 @@
-<?php
-echo "OK";
+<?php echo 1;
