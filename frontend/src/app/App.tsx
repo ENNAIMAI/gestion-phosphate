@@ -1825,43 +1825,16 @@ const AlertesView = React.memo(function AlertesView({ alerts, lang }: AlertViewP
           </div>
           
           {/* Dropdown Priority Filter */}
-          <div className="relative">
-            <div 
-              className="flex items-center gap-1.5 text-[11px] border border-slate-200 px-3 py-1.5 rounded text-slate-600 cursor-pointer hover:bg-slate-50 transition-colors"
-              onClick={() => setShowFilterDropdown(!showFilterDropdown)}
-            >
-              <Filter size={12} />
-              <span className="font-medium">
-                {priorityFilter === "ALL" ? (lang === "fr" ? "Toutes les priorités" : "All Priorities") :
-                 priorityFilter === "MAX_SEUIL" ? (lang === "fr" ? "Critiques" : "Criticals") :
-                 priorityFilter === "MIN_SEUIL" ? (lang === "fr" ? "Avertissements" : "Warnings") : 
-                 (lang === "fr" ? "Résolues" : "Resolved")}
-              </span>
-              <ChevronDown size={12} />
-            </div>
-
-            {showFilterDropdown && (
-              <div className="absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded shadow-lg z-10 py-1">
-                {[
-                  { value: "ALL", label: lang === "fr" ? "Toutes les priorités" : "All Priorities" },
-                  { value: "MAX_SEUIL", label: lang === "fr" ? "Critiques" : "Criticals" },
-                  { value: "MIN_SEUIL", label: lang === "fr" ? "Avertissements" : "Warnings" },
-                  { value: "RESOLVED", label: lang === "fr" ? "Résolues" : "Resolved" }
-                ].map(opt => (
-                  <div 
-                    key={opt.value}
-                    className={`px-3 py-2 text-xs cursor-pointer hover:bg-slate-50 ${priorityFilter === opt.value ? 'bg-slate-50 text-emerald-700 font-bold' : 'text-slate-600'}`}
-                    onClick={() => {
-                      setPriorityFilter(opt.value);
-                      setShowFilterDropdown(false);
-                    }}
-                  >
-                    {opt.label}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <select 
+            className="flex items-center gap-1.5 text-[11px] border border-slate-200 px-3 py-1.5 rounded text-slate-600 cursor-pointer hover:bg-slate-50 transition-colors bg-white outline-none"
+            value={priorityFilter}
+            onChange={(e) => setPriorityFilter(e.target.value)}
+          >
+            <option value="ALL">{lang === "fr" ? "Toutes les priorités" : "All Priorities"}</option>
+            <option value="MAX_SEUIL">{lang === "fr" ? "Critiques" : "Criticals"}</option>
+            <option value="MIN_SEUIL">{lang === "fr" ? "Avertissements" : "Warnings"}</option>
+            <option value="RESOLVED">{lang === "fr" ? "Résolues" : "Resolved"}</option>
+          </select>
         </div>
 
         {/* List of alert items */}
