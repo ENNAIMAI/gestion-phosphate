@@ -15,7 +15,7 @@ class StockMovementPolicy
      */
     public function viewAny(User $user): bool
     {
-        return true; // All roles can view movements
+        return $user->isAdmin() || $user->isManager();
     }
 
     /**
@@ -23,7 +23,7 @@ class StockMovementPolicy
      */
     public function view(User $user, StockMovement $stockMovement): bool
     {
-        return true;
+        return $user->isAdmin() || $user->isManager();
     }
 
     /**

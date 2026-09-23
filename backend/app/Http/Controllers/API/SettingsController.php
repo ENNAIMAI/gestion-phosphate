@@ -105,7 +105,7 @@ class SettingsController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6',
-            'role' => 'required|in:Admin,Responsable Stock',
+            'role' => 'required|in:Admin,Responsable Stock,Operateur,Opérateur,Opérateur Terrain',
             'active' => 'required|boolean'
         ]);
 
@@ -142,7 +142,7 @@ class SettingsController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users,email,' . $id,
-            'role' => 'required|in:Admin,Responsable Stock',
+            'role' => 'required|in:Admin,Responsable Stock,Operateur,Opérateur,Opérateur Terrain',
             'active' => 'required|boolean'
         ]);
 

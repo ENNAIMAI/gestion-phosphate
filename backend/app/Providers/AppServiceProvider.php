@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,5 +21,11 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \App\Models\Stock::observe(\App\Observers\StockObserver::class);
+
+        Gate::define('viewApiDocs', function ($user = null) {
+            return true;
+        });
+
+
     }
 }

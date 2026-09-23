@@ -60,5 +60,10 @@ class User extends Authenticatable
         return $this->role === 'Responsable Stock' || $this->role === 'Manager';
     }
 
+    public function isOperateur(): bool
+    {
+        return in_array($this->role, ['Operateur', 'Opérateur', 'Opérateur Terrain', 'OPERATEUR']);
+    }
+
 }
 

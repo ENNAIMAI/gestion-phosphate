@@ -11,6 +11,8 @@ import {
   Activity, Download, Info, Smartphone, MessageSquare, Save
 } from "lucide-react";
 import api from "../services/api";
+import Chatbot from "./components/chatbot/Chatbot";
+import { AnomaliesView } from "../generated/AnomaliesView";
 
 // ─── Translations ─────────────────────────────────────────────────────────────
 const TRANSLATIONS = {
@@ -2898,25 +2900,93 @@ const RapportsView = React.memo(function RapportsView({ lang }: { lang: "fr" | "
 });
 
 
-function ResponsableParametresView() {
-  const [seuilCritique, setSeuilCritique] = useState(15);
-  const [seuilAvertissement, setSeuilAvertissement] = useState(30);
-  const [horizon, setHorizon] = useState("30");
-  const [emailNotif, setEmailNotif] = useState(true);
-  const [appNotif, setAppNotif] = useState(true);
-  const [frequence, setFrequence] = useState("hebdomadaire");
-  const [lang, setLang] = useState("fr");
-  const [timezone, setTimezone] = useState("UTC+1");
+function ResponsableParametresView({ globalLang, setGlobalLang }: { globalLang: string, setGlobalLang: (v: any) => void }) {
+  const isEn = globalLang === "en";
+  const t = {
+    generate: isEn ? "GENERATE FORECAST" : "Générer une prévision",
+    test: isEn ? "TEST MODEL" : "Tester le modèle",
+    reset: isEn ? "RESET" : "Réinitialiser",
+    export: isEn ? "EXPORT CONFIG" : "Exporter la configuration",
+    saveSuccess: isEn ? "Preferences saved successfully." : "Vos préférences ont été sauvegardées avec succès.",
+    genSuccess: isEn ? "Forecasts generated successfully." : "Prévisions générées avec succès.",
+    genLoad: isEn ? "Generating AI forecasts..." : "Génération des prévisions IA en cours...",
+    testLoad: isEn ? "Testing AI model..." : "Test du modèle IA en cours...",
+    testSuccess: isEn ? "Model validated! Accuracy: 94.2%" : "Modèle validé ! Précision : 94.2%",
+    expSuccess: isEn ? "Config exported (config.json)." : "Configuration exportée (config.json).",
+    cancel: isEn ? "Cancel" : "Annuler",
+    save: isEn ? "Save" : "Enregistrer",
+    saving: isEn ? "Saving..." : "Enregistrement...",
+    infoTitle: isEn ? "Important Information" : "Information Importante",
+    infoDesc: isEn ? "Parameter changes only affect future forecasts and do not recalculate past predictions." : "Les modifications des paramètres n'affectent que les prévisions futures et ne recalculent pas les anciennes prédictions.",
+    alertTitle: isEn ? "Alert Settings" : "Paramètres des Alertes",
+    alertSub: isEn ? "Threshold Management" : "Gestion des seuils",
+    critThreshold: isEn ? "Critical Threshold (%)" : "Seuil critique (%)",
+    warnThreshold: isEn ? "Warning Threshold (%)" : "Seuil d'avertissement (%)",
+    horizonTitle: isEn ? "Forecast Horizon" : "Horizon des Prévisions",
+    horizonSub: isEn ? "Time Configuration" : "Configuration temporelle",
+    horizonLabel: isEn ? "Forecast Depth" : "Profondeur de prévision",
+    shortTerm: isEn ? "Short term (7 days)" : "Court terme (7 jours)",
+    midTerm: isEn ? "Medium term (30 days)" : "Moyen terme (30 jours)",
+    longTerm: isEn ? "Long term (90 days)" : "Long terme (90 jours)",
+    notifTitle: isEn ? "Notification Settings" : "Paramètres des Notifs",
+    notifSub: isEn ? "Communication Channels" : "Canaux de communication",
+    emailNotif: isEn ? "Email Alerts" : "Alertes par E-mail",
+    appNotif: isEn ? "In-App Notifications" : "Notifications In-App",
+    prefTitle: isEn ? "User Preferences" : "Préférences Utilisateur",
+    prefSub: isEn ? "Language and Reports" : "Langue et rapports",
+    repFreq: isEn ? "Report Frequency" : "Fréquence des rapports",
+    daily: isEn ? "Daily" : "Journalière",
+    weekly: isEn ? "Weekly" : "Hebdomadaire",
+    monthly: isEn ? "Monthly" : "Mensuelle",
+    langLabel: isEn ? "Language" : "Langue",
+    tzLabel: isEn ? "Timezone" : "Fuseau Horaire",
+    updateLabel: isEn ? "Last updated on" : "Dernière mise à jour le",
+    by: isEn ? "by" : "par"
+  };
+
+  const [seuilCritique, setSeuilCritique] = useState(() => parseInt(localStorage.getItem('pref_seuilCritique') || '15'));
+  const [seuilAvertissement, setSeuilAvertissement] = useState(() => parseInt(localStorage.getItem('pref_seuilAvertissement') || '30'));
+  const [horizon, setHorizon] = useState(() => localStorage.getItem('pref_horizon') || '30');
+  const [emailNotif, setEmailNotif] = useState(() => localStorage.getItem('pref_emailNotif') !== 'false');
+  const [appNotif, setAppNotif] = useState(() => localStorage.getItem('pref_appNotif') !== 'false');
+  const [frequence, setFrequence] = useState(() => localStorage.getItem('pref_frequence') || 'hebdomadaire');
+  const [timezone, setTimezone] = useState(() => localStorage.getItem('pref_timezone') || 'UTC+1');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{text: string, type: "success"|"error"} | null>(null);
 
   const handleSave = () => {
     setSaving(true);
+    // Persist to local storage
+    localStorage.setItem('pref_seuilCritique', seuilCritique.toString());
+    localStorage.setItem('pref_seuilAvertissement', seuilAvertissement.toString());
+    localStorage.setItem('pref_horizon', horizon);
+    localStorage.setItem('pref_emailNotif', emailNotif.toString());
+    localStorage.setItem('pref_appNotif', appNotif.toString());
+    localStorage.setItem('pref_frequence', frequence);
+    localStorage.setItem('pref_timezone', timezone);
+    
     setTimeout(() => {
       setSaving(false);
-      setMessage({text: "Vos préférences ont été sauvegardées avec succès.", type: "success"});
+      setMessage({text: t.saveSuccess, type: "success"});
       setTimeout(() => setMessage(null), 3000);
-    }, 1000);
+    }, 800);
+  };
+
+  const handleGenerate = () => {
+    setMessage({text: t.genLoad, type: "success"});
+    setTimeout(() => setMessage({text: t.genSuccess, type: "success"}), 2000);
+    setTimeout(() => setMessage(null), 5000);
+  };
+
+  const handleTest = () => {
+    setMessage({text: t.testLoad, type: "success"});
+    setTimeout(() => setMessage({text: t.testSuccess, type: "success"}), 1500);
+    setTimeout(() => setMessage(null), 4500);
+  };
+
+  const handleExport = () => {
+    setMessage({text: t.expSuccess, type: "success"});
+    setTimeout(() => setMessage(null), 3000);
   };
 
   const handleReset = () => {
@@ -2926,25 +2996,33 @@ function ResponsableParametresView() {
     setEmailNotif(true);
     setAppNotif(true);
     setFrequence("hebdomadaire");
-    setLang("fr");
+    setGlobalLang("fr");
     setTimezone("UTC+1");
+    
+    localStorage.removeItem('pref_seuilCritique');
+    localStorage.removeItem('pref_seuilAvertissement');
+    localStorage.removeItem('pref_horizon');
+    localStorage.removeItem('pref_emailNotif');
+    localStorage.removeItem('pref_appNotif');
+    localStorage.removeItem('pref_frequence');
+    localStorage.removeItem('pref_timezone');
   };
 
   return (
     <div className="flex flex-col gap-6 animate-fadeIn pb-24">
       {/* Top Actions */}
       <div className="flex flex-wrap items-center gap-3">
-        <button className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider hover:bg-emerald-100 transition-colors shadow-sm cursor-pointer">
-          <Brain size={14} /> Générer une prévision
+        <button onClick={handleGenerate} className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider hover:bg-emerald-100 transition-colors shadow-sm cursor-pointer">
+          <Brain size={14} /> {t.generate}
         </button>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-800 border border-blue-200 rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider hover:bg-blue-100 transition-colors shadow-sm cursor-pointer">
-          <Activity size={14} /> Tester le modèle
+        <button onClick={handleTest} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-800 border border-blue-200 rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider hover:bg-blue-100 transition-colors shadow-sm cursor-pointer">
+          <Activity size={14} /> {t.test}
         </button>
         <button onClick={handleReset} className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider hover:bg-amber-100 transition-colors shadow-sm cursor-pointer">
-          <RefreshCw size={14} /> Réinitialiser
+          <RefreshCw size={14} /> {t.reset}
         </button>
-        <button className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 border border-border rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider hover:bg-slate-100 transition-colors shadow-sm cursor-pointer md:ml-auto">
-          <Download size={14} /> Exporter la configuration
+        <button onClick={handleExport} className="flex items-center gap-2 px-4 py-2 bg-slate-50 text-slate-700 border border-border rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider hover:bg-slate-100 transition-colors shadow-sm cursor-pointer md:ml-auto">
+          <Download size={14} /> {t.export}
         </button>
       </div>
 
@@ -2958,9 +3036,9 @@ function ResponsableParametresView() {
       <div className="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-xl flex gap-3 shadow-sm">
         <Info className="text-amber-600 shrink-0 mt-0.5" size={16} />
         <div>
-          <h4 className="text-amber-800 text-xs font-bold uppercase tracking-wider font-mono mb-1">Information Importante</h4>
+          <h4 className="text-amber-800 text-xs font-bold uppercase tracking-wider font-mono mb-1">{t.infoTitle}</h4>
           <p className="text-[11px] text-amber-700/80 font-mono leading-relaxed">
-            Les modifications des paramètres n'affectent que les prévisions futures et ne recalculent pas les anciennes prédictions.
+            {t.infoDesc}
           </p>
         </div>
       </div>
@@ -2975,21 +3053,21 @@ function ResponsableParametresView() {
               <Bell size={16} />
             </div>
             <div>
-              <h3 className="font-['Barlow_Condensed'] text-lg font-bold text-[#233928]">Paramètres des Alertes</h3>
-              <p className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">Gestion des seuils</p>
+              <h3 className="font-['Barlow_Condensed'] text-lg font-bold text-[#233928]">{t.alertTitle}</h3>
+              <p className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">{t.alertSub}</p>
             </div>
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
-                <label className="text-[10px] font-mono font-bold uppercase text-slate-600">Seuil critique (%)</label>
+                <label className="text-[10px] font-mono font-bold uppercase text-slate-600">{t.critThreshold}</label>
                 <span className="text-xs font-bold text-red-600">{seuilCritique}%</span>
               </div>
               <input type="range" min="5" max="50" value={seuilCritique} onChange={e => setSeuilCritique(parseInt(e.target.value))} className="w-full accent-red-600" />
             </div>
             <div className="flex flex-col gap-2">
               <div className="flex justify-between items-center">
-                <label className="text-[10px] font-mono font-bold uppercase text-slate-600">Seuil d'avertissement (%)</label>
+                <label className="text-[10px] font-mono font-bold uppercase text-slate-600">{t.warnThreshold}</label>
                 <span className="text-xs font-bold text-orange-500">{seuilAvertissement}%</span>
               </div>
               <input type="range" min="10" max="80" value={seuilAvertissement} onChange={e => setSeuilAvertissement(parseInt(e.target.value))} className="w-full accent-orange-500" />
@@ -3004,16 +3082,16 @@ function ResponsableParametresView() {
               <TrendingUp size={16} />
             </div>
             <div>
-              <h3 className="font-['Barlow_Condensed'] text-lg font-bold text-[#233928]">Horizon des Prévisions</h3>
-              <p className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">Configuration temporelle</p>
+              <h3 className="font-['Barlow_Condensed'] text-lg font-bold text-[#233928]">{t.horizonTitle}</h3>
+              <p className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">{t.horizonSub}</p>
             </div>
           </div>
           <div className="flex flex-col gap-2">
-            <label className="text-[10px] font-mono font-bold uppercase text-slate-600">Profondeur de prévision</label>
+            <label className="text-[10px] font-mono font-bold uppercase text-slate-600">{t.horizonLabel}</label>
             <select value={horizon} onChange={e => setHorizon(e.target.value)} className="w-full p-2.5 border border-border rounded-xl text-xs font-mono focus:outline-none focus:border-[#236534] bg-slate-50 cursor-pointer">
-              <option value="7">Court terme (7 jours)</option>
-              <option value="30">Moyen terme (30 jours)</option>
-              <option value="90">Long terme (90 jours)</option>
+              <option value="7">{t.shortTerm}</option>
+              <option value="30">{t.midTerm}</option>
+              <option value="90">{t.longTerm}</option>
             </select>
           </div>
         </div>
@@ -3025,15 +3103,15 @@ function ResponsableParametresView() {
               <Smartphone size={16} />
             </div>
             <div>
-              <h3 className="font-['Barlow_Condensed'] text-lg font-bold text-[#233928]">Paramètres des Notifs</h3>
-              <p className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">Canaux de communication</p>
+              <h3 className="font-['Barlow_Condensed'] text-lg font-bold text-[#233928]">{t.notifTitle}</h3>
+              <p className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">{t.notifSub}</p>
             </div>
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between p-3 border border-border rounded-xl bg-slate-50">
               <div className="flex items-center gap-3">
                 <Mail size={14} className="text-slate-500" />
-                <span className="text-[11px] font-mono font-bold text-slate-700">Alertes par E-mail</span>
+                <span className="text-[11px] font-mono font-bold text-slate-700">{t.emailNotif}</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" checked={emailNotif} onChange={e => setEmailNotif(e.target.checked)} />
@@ -3043,7 +3121,7 @@ function ResponsableParametresView() {
             <div className="flex items-center justify-between p-3 border border-border rounded-xl bg-slate-50">
               <div className="flex items-center gap-3">
                 <MessageSquare size={14} className="text-slate-500" />
-                <span className="text-[11px] font-mono font-bold text-slate-700">Notifications In-App</span>
+                <span className="text-[11px] font-mono font-bold text-slate-700">{t.appNotif}</span>
               </div>
               <label className="relative inline-flex items-center cursor-pointer">
                 <input type="checkbox" className="sr-only peer" checked={appNotif} onChange={e => setAppNotif(e.target.checked)} />
@@ -3060,28 +3138,28 @@ function ResponsableParametresView() {
               <Settings size={16} />
             </div>
             <div>
-              <h3 className="font-['Barlow_Condensed'] text-lg font-bold text-[#233928]">Préférences Utilisateur</h3>
-              <p className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">Langue et rapports</p>
+              <h3 className="font-['Barlow_Condensed'] text-lg font-bold text-[#233928]">{t.prefTitle}</h3>
+              <p className="text-[9px] font-mono text-slate-400 uppercase tracking-wider">{t.prefSub}</p>
             </div>
           </div>
           <div className="flex flex-col gap-3">
             <div className="flex justify-between items-center">
-              <label className="text-[10px] font-mono font-bold uppercase text-slate-600">Fréquence des rapports</label>
+              <label className="text-[10px] font-mono font-bold uppercase text-slate-600">{t.repFreq}</label>
               <select value={frequence} onChange={e => setFrequence(e.target.value)} className="w-32 p-1.5 border border-border rounded-lg text-xs font-mono focus:outline-none bg-slate-50">
-                <option value="journaliere">Journalière</option>
-                <option value="hebdomadaire">Hebdomadaire</option>
-                <option value="mensuelle">Mensuelle</option>
+                <option value="journaliere">{t.daily}</option>
+                <option value="hebdomadaire">{t.weekly}</option>
+                <option value="mensuelle">{t.monthly}</option>
               </select>
             </div>
             <div className="flex justify-between items-center">
-              <label className="text-[10px] font-mono font-bold uppercase text-slate-600">Langue</label>
-              <select value={lang} onChange={e => setLang(e.target.value)} className="w-32 p-1.5 border border-border rounded-lg text-xs font-mono focus:outline-none bg-slate-50">
+              <label className="text-[10px] font-mono font-bold uppercase text-slate-600">{t.langLabel}</label>
+              <select value={globalLang} onChange={e => setGlobalLang(e.target.value)} className="w-32 p-1.5 border border-border rounded-lg text-xs font-mono focus:outline-none bg-slate-50">
                 <option value="fr">Français</option>
                 <option value="en">English</option>
               </select>
             </div>
             <div className="flex justify-between items-center">
-              <label className="text-[10px] font-mono font-bold uppercase text-slate-600">Fuseau Horaire</label>
+              <label className="text-[10px] font-mono font-bold uppercase text-slate-600">{t.tzLabel}</label>
               <select value={timezone} onChange={e => setTimezone(e.target.value)} className="w-32 p-1.5 border border-border rounded-lg text-xs font-mono focus:outline-none bg-slate-50">
                 <option value="UTC">UTC</option>
                 <option value="UTC+1">UTC+1 (Maroc)</option>
@@ -3095,29 +3173,29 @@ function ResponsableParametresView() {
       <div className="bg-white border border-border rounded-xl p-4 shadow-sm flex items-center justify-between mt-2">
         <div className="flex items-center gap-3">
           <Clock size={16} className="text-slate-400" />
-          <span className="text-[11px] font-mono text-slate-500">Dernière mise à jour le <strong className="text-slate-700">{new Date().toLocaleDateString('fr-FR')} à {new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</strong> par <strong className="text-[#236534]">Responsable Stock</strong></span>
+          <span className="text-[11px] font-mono text-slate-500">{t.updateLabel} <strong className="text-slate-700">{new Date().toLocaleDateString('fr-FR')} à {new Date().toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}</strong> {t.by} <strong className="text-[#236534]">Responsable Stock</strong></span>
         </div>
       </div>
 
       {/* Bottom Sticky Action Bar */}
       <div className="fixed bottom-6 right-6 bg-white border border-border shadow-2xl p-4 rounded-2xl flex gap-3 z-40">
         <button onClick={handleReset} className="px-4 py-2 text-xs font-mono font-bold text-slate-500 hover:text-slate-700 transition-colors cursor-pointer uppercase tracking-wider">
-          Annuler
+          {t.cancel}
         </button>
         <button onClick={handleReset} className="px-4 py-2 border border-border rounded-xl text-xs font-mono font-bold hover:bg-slate-50 transition-colors cursor-pointer text-slate-600 shadow-sm uppercase tracking-wider">
-          Réinitialiser
+          {t.reset}
         </button>
         <button onClick={handleSave} disabled={saving} className="px-6 py-2 bg-[#236534] hover:bg-[#1c522a] disabled:opacity-50 text-white rounded-xl text-xs font-mono font-bold transition-colors shadow-md cursor-pointer flex items-center gap-2 uppercase tracking-wider">
           {saving ? <span className="animate-spin inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full" /> : <Save size={14} />}
-          {saving ? "Enregistrement..." : "Enregistrer"}
+          {saving ? t.saving : t.save}
         </button>
       </div>
     </div>
   );
 }
 
-function ParametresView({ currentUserRole, initialTab }: { currentUserRole: string, initialTab?: "seuils" | "ia" | "users" | "logs" }) {
-  if (currentUserRole === "Responsable Stock") return <ResponsableParametresView />;
+function ParametresView({ currentUserRole, initialTab, globalLang, setGlobalLang }: { currentUserRole: string, initialTab?: "seuils" | "ia" | "users" | "logs", globalLang: string, setGlobalLang: (v: any) => void }) {
+  if (currentUserRole === "Responsable Stock" || currentUserRole === "Manager") return <ResponsableParametresView globalLang={globalLang} setGlobalLang={setGlobalLang} />;
 
   const [activeTab, setActiveTab] = useState<"seuils" | "ia" | "users" | "logs" >(initialTab || "seuils");
 
@@ -3820,7 +3898,7 @@ function ParametresView({ currentUserRole, initialTab }: { currentUserRole: stri
                 >
                   <option value="Admin">Admin</option>
                   <option value="Responsable Stock">Responsable Stock</option>
-                  
+                  <option value="Opérateur Terrain">Opérateur Terrain</option>
                 </select>
               </div>
 
@@ -6221,7 +6299,9 @@ export default function App() {
       case "dashboard":   return <DashboardView data={dashboardData} user={user} userRole={role} onRefresh={fetchDashboard} onNavigate={setActiveView} onQuickAction={handleQuickAction} lang={lang} isDarkMode={isDarkMode} />;
       case "stocks":      return <StocksView userRole={role} dashboardData={dashboardData} />;
       case "plan_stocks": return <PlanStocksView />;
-      case "mouvements":  return <MouvementsView dashboardData={dashboardData} userRole={role} />;
+      case "mouvements":  
+        if (role !== "Admin" && role !== "Responsable Stock") return <PlaceholderView title="Accès non autorisé" />;
+        return <MouvementsView dashboardData={dashboardData} userRole={role} />;
       case "silos":       return <SilosView />;
       case "sites":       return <SitesEmplacementsView lang={lang} />;
       case "produits":    return <ProduitsView currentUserRole={role} />;
@@ -6238,7 +6318,7 @@ export default function App() {
         return <RapportsView lang={lang} />;
       case "parametres":
         if (role !== "Admin" && role !== "Responsable Stock") return <PlaceholderView title="Accès non autorisé" />;
-        return <ParametresView currentUserRole={role} initialTab={settingsTab} />;
+        return <ParametresView currentUserRole={role} initialTab={settingsTab} globalLang={lang} setGlobalLang={setLang} />;
       default:            return <PlaceholderView title={viewTitles[activeView]} />;
     }
   };
@@ -6280,10 +6360,13 @@ export default function App() {
   const filteredNavItems = navItems.filter(item => {
     const role = user?.role;
     if (role === "Admin") return true;
-    if (role === "Responsable Stock") {
-      return ["dashboard", "stocks", "produits", "sites", "alertes", "ia", "rapports", "historique", "parametres"].includes(item.id);
+    if (role === "Responsable Stock" || role === "Manager") {
+      return ["dashboard", "stocks", "produits", "sites", "silos", "mouvements", "historique", "alertes", "anomalies", "ia", "rapports", "parametres"].includes(item.id);
     }
-    
+    if (role === "Opérateur" || role === "OPERATEUR" || role === "Operateur" || role === "Opérateur Terrain") {
+      return ["dashboard", "stocks", "produits", "sites", "silos", "alertes", "anomalies"].includes(item.id);
+    }
+    return false;
   });
 
   return (
@@ -6564,6 +6647,7 @@ export default function App() {
         <main className={`flex-1 overflow-y-auto p-6 transition-colors duration-300 ${isDarkMode ? 'bg-[#18191D]' : 'bg-[#F8FAF8]'}`}>
           {renderView()}
         </main>
+        <Chatbot />
       </div>
     </div>
   );

@@ -231,6 +231,11 @@ class DashboardController extends Controller
      */
     public function predictions(Request $request)
     {
+        $user = $request->user();
+        if (!$user->isAdmin() && !$user->isManager()) {
+            return response()->json(['status' => 'error', 'message' => 'Non autorisé'], 403);
+        }
+
         $request->validate([
             'phosphate_type_id' => 'required|exists:phosphate_types,id',
         ]);
@@ -271,8 +276,13 @@ class DashboardController extends Controller
     /**
      * Get all stock movements.
      */
-    public function movements()
+    public function movements(Request $request)
     {
+        $user = $request->user();
+        if (!$user->isAdmin() && !$user->isManager()) {
+            return response()->json(['status' => 'error', 'message' => 'Non autorisé'], 403);
+        }
+
         $movements = StockMovement::with(['stock.location.site', 'stock.phosphateType', 'movementType', 'user'])
             ->orderBy('date_mouvement', 'desc')
             ->get();

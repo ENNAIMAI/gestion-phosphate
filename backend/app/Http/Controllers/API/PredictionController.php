@@ -24,6 +24,11 @@ class PredictionController extends Controller
      */
     public function predict(PredictionRequest $request): JsonResponse
     {
+        $user = $request->user();
+        if (!$user->isAdmin() && !$user->isManager()) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
+
         $days = $request->input('days', 30);
         $options = [
             'yearly_seasonality' => $request->input('yearly_seasonality', true),
@@ -58,8 +63,13 @@ class PredictionController extends Controller
     /**
      * Get prediction history logs.
      */
-    public function history(): JsonResponse
+    public function history(\Illuminate\Http\Request $request): JsonResponse
     {
+        $user = $request->user();
+        if (!$user->isAdmin() && !$user->isManager()) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
+
         $logs = \App\Models\AuditLog::with('user')
             ->where('auditable_type', \App\Models\DemandPrediction::class)
             ->orderBy('id', 'desc')

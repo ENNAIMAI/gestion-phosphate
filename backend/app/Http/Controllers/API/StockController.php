@@ -155,6 +155,9 @@ class StockController extends Controller
      */
     public function exportExcel(\Illuminate\Http\Request $request)
     {
+        if (!$request->user()->isAdmin() && !$request->user()->isManager()) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
         $query = \App\Models\StockMovement::with(['stock.location.site', 'stock.phosphateType', 'movementType', 'user']);
 
         if ($request->filled('start_date')) {
@@ -243,6 +246,9 @@ class StockController extends Controller
      */
     public function exportPdf(\Illuminate\Http\Request $request)
     {
+        if (!$request->user()->isAdmin() && !$request->user()->isManager()) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
         $query = Stock::with(['location.site', 'phosphateType']);
 
         if ($request->filled('phosphate_type_id')) {
@@ -286,6 +292,9 @@ class StockController extends Controller
      */
     public function generateGFReport(\Illuminate\Http\Request $request)
     {
+        if (!$request->user()->isAdmin() && !$request->user()->isManager()) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
         $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('Rapport de Flux');
@@ -612,8 +621,11 @@ class StockController extends Controller
     /**
      * Récupère l'historique des rapports générés.
      */
-    public function reportHistory(): JsonResponse
+    public function reportHistory(\Illuminate\Http\Request $request): JsonResponse
     {
+        if (!$request->user()->isAdmin() && !$request->user()->isManager()) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
         $docs = \App\Models\Document::with('user')
             ->orderBy('id', 'desc')
             ->limit(20)
@@ -630,6 +642,9 @@ class StockController extends Controller
      */
     public function reportPreview(\Illuminate\Http\Request $request): JsonResponse
     {
+        if (!$request->user()->isAdmin() && !$request->user()->isManager()) {
+            return response()->json(['success' => false, 'message' => 'Non autorisé'], 403);
+        }
         $query = \App\Models\StockMovement::with(['stock.location.site', 'stock.phosphateType', 'movementType', 'user']);
 
         if ($request->filled('start_date')) {

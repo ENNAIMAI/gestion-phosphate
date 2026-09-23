@@ -57,6 +57,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Settings Configuration
     Route::get('/settings', [SettingsController::class, 'index']);
     Route::put('/settings/alert-rules/{id}', [SettingsController::class, 'updateAlertRule']);
+    
+    // Anomalies
+    Route::get('/anomalies', [\App\Http\Controllers\API\AnomalyController::class, 'index']);
+    Route::post('/anomalies', [\App\Http\Controllers\API\AnomalyController::class, 'store']);
+    Route::put('/anomalies/{id}', [\App\Http\Controllers\API\AnomalyController::class, 'updateStatus']);
+    
     Route::post('/phosphate-types', [SettingsController::class, 'storePhosphateType']);
     Route::put('/phosphate-types/{id}', [SettingsController::class, 'updatePhosphateType']);
     Route::delete('/phosphate-types/{id}', [SettingsController::class, 'destroyPhosphateType']);
